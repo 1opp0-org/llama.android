@@ -7,6 +7,8 @@ pluginManagement {
 }
 dependencyResolutionManagement {
 
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+
     repositories {
         google()
         mavenCentral()
@@ -14,4 +16,7 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "llama.android"
-include(":sample-app")
+include(
+    ":sample-app",
+    ":llama.android"
+)
