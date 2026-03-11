@@ -156,7 +156,7 @@ internal class InferenceEngineImpl private constructor(
             try {
                 Log.i(TAG, "Checking access to model file... \n$pathToModel")
                 File(pathToModel).let {
-                    require(it.exists()) { "File not found" }
+                    require(it.exists()) { "File not found: $pathToModel" }
                     require(it.isFile) { "Not a valid file" }
                     require(it.canRead()) { "Cannot read file" }
                 }

@@ -6,3 +6,6 @@ local.properties
 # intellij
 .idea/
 
+
+# AI
+*.gguf
