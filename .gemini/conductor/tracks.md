@@ -11,9 +11,9 @@
   - *Depends on:* `init`
 - [/] **Track: Core Library Refactoring** (ID: `refactor`)
   - *Depends on:* `toml`
-- [/] **Track: Refactor sample activity into Compose** (ID: `sample-refactor`)
+- [x] **Track: Refactor sample activity into Compose** (ID: `sample-refactor`)
   - *Depends on:* `init`
-- [ ] **Track: CI Setup** (ID: `ci`)
+- [/] **Track: CI Setup** (ID: `ci`)
   - *Depends on:* `init`
 - [ ] **Track: Instrumented Test Hello World (CI)** (ID: `test-hw`)
   - *Depends on:* `ci`
