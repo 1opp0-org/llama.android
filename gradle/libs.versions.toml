@@ -3,14 +3,28 @@ agp = "8.2.2"
 kotlin = "1.9.22"
 kotlinx-coroutines = "1.7.3"
 
-# section: android
+# section: android 1st party
 coreKtx = "1.12.0"
 lifecycleRuntimeKtx = "2.7.0"
 composeBom = "2023.10.01"
 activityCompose = "1.8.2"
 
-# section: other
+# section: android other
 ktor = "3.0.2"
+
+# section: c++
+ndkVersion = "29.0.13113456"
+cmakeVersion = "3.31.6"
+
+# section: android versions
+compileSdk = "36"
+minSdk = "33"
+targetSdk = "34"
+
+# section: gradle variables
+project-group = "net.amazingapps.llama_android"
+project-version = "0.0.1"
+project-versionCode = "1"
 
 [libraries]
 

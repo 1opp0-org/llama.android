@@ -5,7 +5,9 @@
 - [x] **Track: Project Initialization** (ID: `init`)
 - [ ] **Track: Pick a License** (ID: `license`)
   - *Depends on:* `init`
-- [ ] **Track: TOML Versioning** (ID: `toml`)
+- [x] **Track: TOML Versioning** (ID: `toml`)
+  - *Depends on:* `init`
+- [ ] **Track: Fast Compilation Configuration** (ID: `fast-compile`)
   - *Depends on:* `init`
 - [/] **Track: Core Library Refactoring** (ID: `refactor`)
   - *Depends on:* `toml`
@@ -32,10 +34,10 @@
 
 ```
        [init]
-      /  |   \
-     / [license] \
-    /    |        \
- [toml]--+-------[ci]
+      /  |   \_________________
+     / [license]               \
+    /    |                      \
+ [toml]--+-------[ci]      [fast-compile]
    |     |         |
    |     |     [test-hw]
    |     |         |

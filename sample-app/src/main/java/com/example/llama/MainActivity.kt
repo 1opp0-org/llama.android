@@ -30,6 +30,8 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.util.UUID
+import net.amazingapps.llama_android.sample.app.R
+
 
 class MainActivity : AppCompatActivity() {
 

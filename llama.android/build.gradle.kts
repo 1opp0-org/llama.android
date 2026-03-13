@@ -4,14 +4,13 @@ plugins {
 }
 
 android {
-    namespace = "com.arm.aichat"
-    compileSdk = 36
-
-    ndkVersion = "29.0.13113456"
+    namespace = libs.versions.project.group.get() + ".core"
+    compileSdk = libs.versions.compileSdk.get().toInt()
+    ndkVersion = libs.versions.ndkVersion.get()
 
 
     defaultConfig {
-        minSdk = 33
+        minSdk = libs.versions.minSdk.get().toInt()
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
@@ -36,13 +35,13 @@ android {
             }
         }
         aarMetadata {
-            minCompileSdk = 35
+            minCompileSdk = libs.versions.minSdk.get().toInt()
         }
     }
     externalNativeBuild {
         cmake {
             path("src/main/cpp/CMakeLists.txt")
-            version = "3.31.6"
+            version = libs.versions.cmakeVersion.get()
         }
     }
     compileOptions {
