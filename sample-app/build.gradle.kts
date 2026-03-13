@@ -66,7 +66,6 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     debugImplementation(libs.androidx.compose.ui.tooling)
     implementation(libs.androidx.compose.material3)
-    implementation("com.google.android.material:material:1.12.0")
 
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.compose)

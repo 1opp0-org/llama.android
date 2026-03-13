@@ -28,8 +28,11 @@ jobs:
       with:
         log-accepted-android-sdk-licenses: false
 
+    - name: Build llama.android c++ code
+      run: ./gradlew :llama.android:buildCMakeDebug --no-daemon
+
     - name: Build llama.android library
-      run: ./gradlew :llama.android:assembleDebug --no-daemon
+      run: ./gradlew :llama.android:assembleDebug
 
     - name: Build sample-app
-      run: ./gradlew :sample-app:assembleDebug --no-daemon
+      run: ./gradlew :sample-app:assembleDebug
