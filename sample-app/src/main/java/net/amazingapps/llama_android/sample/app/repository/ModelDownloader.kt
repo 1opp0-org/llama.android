@@ -17,7 +17,7 @@ import java.io.File
 
 class ModelDownloader(private val context: Context, private val httpClient: HttpClient) {
 
-    val modelDir = File(context.cacheDir, "model")
+    private val modelDir = File(context.cacheDir, "model")
 
     companion object {
         private const val BUFFER_SIZE: Long = 1024 * 1024

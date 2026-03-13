@@ -25,13 +25,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.util.UUID
 import net.amazingapps.llama_android.sample.app.R
-
+import net.amazingapps.llama_android.sample.app.repository.ModelDownloader
 
 class MainActivity : AppCompatActivity() {
 
@@ -286,4 +287,34 @@ fun GgufMetadata.filename() = when {
     else -> {
         "model-${System.currentTimeMillis().toHexString()}"
     }
+}
+
+
+fun doAll(context: Context): File {
+
+    val filename = "theModel.gguf"
+
+    runBlocking {
+
+        val url =
+            "https://huggingface.co/HuggingFaceTB/SmolLM2-360M-Instruct-GGUF/resolve/main/smollm2-360m-instruct-q8_0.gguf"
+
+        ModelDownloader(context, HttpClient(CIO) {
+            engine {
+                requestTimeout = 0
+            }
+        }).ensureModelDownloaded(
+            url = url,
+            modelName = filename
+        ) { progress ->
+            Log.i("ModelDownloadProgress", "Download progress: ${"%.2f".format(progress * 100)}%")
+        }
+    }
+
+    val modelDir = File(context.cacheDir, "model")
+    val outputFile = File(modelDir, filename)
+
+    return outputFile
+
+
 }

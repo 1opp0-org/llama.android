@@ -1,22 +1,24 @@
 package net.amazingapps.llama_android.sample.app
 
-import android.app.Application
-import android.content.Context
-import android.util.Log
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
+import com.arm.aichat.InferenceEngine
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import net.amazingapps.llama_android.sample.app.repository.ModelDownloader
 import java.io.File
 
-class MainViewModel(application: Application) : AndroidViewModel(application) {
+class MainViewModel(
+    private val modelDownloader: ModelDownloader,
+    private val engine: InferenceEngine
+) : ViewModel() {
     private val mutableUiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = mutableUiState.asStateFlow()
 
@@ -25,16 +27,64 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun downloadAndLoadModel() {
-        // Simple mock for now as requested to revert integration for now
-        viewModelScope.launch {
-            mutableUiState.update { it.copy(isDownloading = true, status = "Downloading...") }
+        val url =
+            "https://huggingface.co/HuggingFaceTB/SmolLM2-360M-Instruct-GGUF/resolve/main/smollm2-360m-instruct-q8_0.gguf"
 
-            // Simulating completion for now
+        val filename = "smollm2-360m-q8_0.gguf"
+
+        viewModelScope.launch {
+            val modelFile = downloadModel(url, filename)
+            if (modelFile != null) {
+                loadModel(modelFile.path)
+            }
+        }
+    }
+
+    private suspend fun downloadModel(url: String, filename: String): File? = withContext(Dispatchers.IO) {
+        mutableUiState.update { it.copy(isDownloading = true, status = "Starting download...") }
+
+
+        val modelFile = modelDownloader.ensureModelDownloaded(
+            url = url,
+            modelName = filename
+        ) { progress ->
+            mutableUiState.update { it.copy(status = "Downloading: ${"%.2f".format(progress * 100)}%") }
+        }
+
+        if (modelFile == null) {
+            mutableUiState.update {
+                it.copy(
+                    isDownloading = false,
+                    status = "Download Failed"
+                )
+            }
+        }
+        modelFile
+    }
+
+    private suspend fun loadModel(path: String) = withContext(Dispatchers.IO) {
+        mutableUiState.update { it.copy(status = "Waiting for engine initialization...") }
+        
+        // Wait for engine to be initialized
+        engine.state.first { 
+            it is InferenceEngine.State.Initialized || it is InferenceEngine.State.ModelReady 
+        }
+
+        mutableUiState.update { it.copy(status = "Loading model...") }
+        try {
+            engine.loadModel(path)
             mutableUiState.update {
                 it.copy(
                     isDownloading = false,
                     modelLoaded = true,
                     status = "Model Loaded"
+                )
+            }
+        } catch (e: Exception) {
+            mutableUiState.update {
+                it.copy(
+                    isDownloading = false,
+                    status = "Error loading model: ${e.message}"
                 )
             }
         }
@@ -46,40 +96,29 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             mutableUiState.update {
                 it.copy(
                     status = "Generating...",
-                    aiResponse = "Processing: $currentInput",
+                    aiResponse = "",
                     userInput = ""
                 )
             }
-        }
-    }
-}
-
-
-fun doAll(context: Context): File {
-
-    val filename = "theModel.gguf"
-
-    runBlocking {
-
-        val url =
-            "https://huggingface.co/HuggingFaceTB/SmolLM2-360M-Instruct-GGUF/resolve/main/smollm2-360m-instruct-q8_0.gguf"
-
-        ModelDownloader(context, HttpClient(CIO) {
-            engine {
-                requestTimeout = 0
+            
+            viewModelScope.launch(Dispatchers.Default) {
+                engine.sendUserPrompt(currentInput)
+                    .onCompletion {
+                        mutableUiState.update { it.copy(status = "Model Loaded") }
+                    }
+                    .collect { token ->
+                        withContext(Dispatchers.Main) {
+                            mutableUiState.update { state ->
+                                state.copy(aiResponse = state.aiResponse + token)
+                            }
+                        }
+                    }
             }
-        }).ensureModelDownloaded(
-            url = url,
-            modelName = filename
-        ) { progress ->
-            Log.i("ModelDownloadProgress", "Download progress: ${"%.2f".format(progress * 100)}%")
         }
     }
 
-    val modelDir = File(context.cacheDir, "model")
-    val outputFile = File(modelDir, filename)
-
-    return outputFile
-
-
+    override fun onCleared() {
+        super.onCleared()
+        engine.destroy()
+    }
 }

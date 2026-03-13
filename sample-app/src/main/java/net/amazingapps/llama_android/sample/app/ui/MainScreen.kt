@@ -13,13 +13,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import org.koin.androidx.compose.koinViewModel
 import net.amazingapps.llama_android.sample.app.MainUiState
 import net.amazingapps.llama_android.sample.app.MainViewModel
-import net.amazingapps.llama_android.sample.app.ui.ChatSection
 
 @Composable
-fun MainScreen(viewModel: MainViewModel = viewModel()) {
+fun MainScreen(viewModel: MainViewModel = koinViewModel()) {
     val uiState by viewModel.uiState.collectAsState()
 
     MainScreenContent(
