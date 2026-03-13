@@ -16,11 +16,13 @@ android {
         consumerProguardFiles("consumer-rules.pro")
 
         ndk {
-            abiFilters += listOf("arm64-v8a", "x86_64")
+            abiFilters += listOf("x86_64")
+//            abiFilters += listOf("arm64-v8a", "x86_64")
         }
         externalNativeBuild {
             cmake {
 //                arguments += "-DCMAKE_BUILD_TYPE=Release"
+                arguments += "-DCMAKE_BUILD_TYPE=Debug"
                 arguments += "-DCMAKE_MESSAGE_LOG_LEVEL=DEBUG"
                 arguments += "-DCMAKE_VERBOSE_MAKEFILE=ON"
 
@@ -30,7 +32,8 @@ android {
 
                 arguments += "-DGGML_NATIVE=OFF"
                 arguments += "-DGGML_BACKEND_DL=ON"
-                arguments += "-DGGML_CPU_ALL_VARIANTS=ON"
+//                arguments += "-DGGML_CPU_ALL_VARIANTS=ON"
+                arguments += "-DGGML_CPU_ALL_VARIANTS=OFF"
                 arguments += "-DGGML_LLAMAFILE=OFF"
             }
         }
@@ -70,7 +73,7 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.core.ktx)
+//    implementation(libs.androidx.core.ktx)
     implementation(libs.kotlinx.coroutines.android)
 //    implementation(libs.androidx.datastore.preferences)
 
