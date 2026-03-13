@@ -1,4 +1,4 @@
-package com.example.llama
+package net.amazingapps.llama_android.sample.app.repository
 
 import android.content.Context
 import android.util.Log
@@ -87,34 +87,5 @@ class ModelDownloader(private val context: Context, private val httpClient: Http
             }
         }
     }
-
-}
-
-fun doAll(context: Context): File {
-
-    val filename = "theModel.gguf"
-
-    runBlocking {
-
-        val url =
-            "https://huggingface.co/HuggingFaceTB/SmolLM2-360M-Instruct-GGUF/resolve/main/smollm2-360m-instruct-q8_0.gguf"
-
-        ModelDownloader(context, HttpClient(CIO) {
-            engine {
-                requestTimeout = 0
-            }
-        }).ensureModelDownloaded(
-            url = url,
-            modelName = filename
-        ) { progress ->
-            Log.i("ModelDownloadProgress", "Download progress: ${"%.2f".format(progress * 100)}%")
-        }
-    }
-
-    val modelDir = File(context.cacheDir, "model")
-    val outputFile = File(modelDir, filename)
-
-    return outputFile
-
 
 }
