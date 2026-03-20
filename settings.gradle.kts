@@ -18,5 +18,5 @@ dependencyResolutionManagement {
 rootProject.name = "llama.android"
 include(
     ":sample-app",
-    ":llama.android",
+    ":llama-android-core",
 )

@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-25.10
 
     steps:
     - name: Checkout code
@@ -29,10 +29,10 @@ jobs:
         log-accepted-android-sdk-licenses: false
 
     - name: Build llama.android c++ code
-      run: ./gradlew :llama.android:buildCMakeDebug --no-daemon
+      run: ./gradlew :llama-android-core:buildCMakeDebug --no-daemon
 
     - name: Build llama.android library
-      run: ./gradlew :llama.android:assembleDebug
+      run: ./gradlew :llama-android-core:assembleDebug
 
     - name: Build sample-app
       run: ./gradlew :sample-app:assembleDebug

@@ -54,7 +54,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":llama.android"))
+    implementation(project(":llama-android-core"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

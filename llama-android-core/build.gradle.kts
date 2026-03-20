@@ -1,13 +1,33 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    id(libs.plugins.maven.publish.get().pluginId)
+}
+
+publishing {
+    publications {
+        register<MavenPublication>("release") {
+            groupId = libs.versions.project.group.get()
+            artifactId = "core"
+            version = libs.versions.project.version.get()
+
+            afterEvaluate {
+                from(components["release"])
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = "LocalRepo"
+            url = uri(layout.buildDirectory.dir("repo"))
+        }
+    }
 }
 
 android {
     namespace = libs.versions.project.group.get() + ".core"
     compileSdk = libs.versions.compileSdk.get().toInt()
     ndkVersion = libs.versions.ndkVersion.get()
-
 
     defaultConfig {
         minSdk = libs.versions.minSdk.get().toInt()
@@ -16,8 +36,8 @@ android {
         consumerProguardFiles("consumer-rules.pro")
 
         ndk {
-            abiFilters += listOf("x86_64")
-//            abiFilters += listOf("arm64-v8a", "x86_64")
+//            abiFilters += listOf("x86_64")
+            abiFilters += listOf("arm64-v8a", "x86_64")
         }
         externalNativeBuild {
             cmake {
@@ -35,6 +55,7 @@ android {
 //                arguments += "-DGGML_CPU_ALL_VARIANTS=ON"
                 arguments += "-DGGML_CPU_ALL_VARIANTS=OFF"
                 arguments += "-DGGML_LLAMAFILE=OFF"
+                arguments += "-DGGML_CPU_KLEIDIAI=OFF" // this needs cmake 3.24, which is not available on sdkmanager
             }
         }
         aarMetadata {
