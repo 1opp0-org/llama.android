@@ -1,4 +1,4 @@
-package net.amazingapps.llama_android.sample.app
+package net.amazingapps.llama.android.sample.app
 
 import android.app.Application
 import org.koin.android.ext.koin.androidContext

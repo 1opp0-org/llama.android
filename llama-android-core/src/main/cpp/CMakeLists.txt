@@ -1,6 +1,4 @@
 cmake_minimum_required(VERSION 3.22.1)
-# cmake_minimum_required(VERSION 3.30.3)
-# cmake_minimum_required(VERSION 3.31.6)
 
 project("ai-chat" VERSION 1.0.0 LANGUAGES C CXX)
 

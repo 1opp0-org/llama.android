@@ -1,17 +1,15 @@
-package net.amazingapps.llama_android.sample.app.repository
+package net.amazingapps.llama.android.sample.app.repository
 
 import android.content.Context
 import android.util.Log
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.engine.cio.CIO
 import io.ktor.client.request.prepareGet
 import io.ktor.http.contentLength
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.core.remaining
 import io.ktor.utils.io.exhausted
 import io.ktor.utils.io.readRemaining
-import kotlinx.coroutines.runBlocking
 import kotlinx.io.asSink
 import java.io.File
 

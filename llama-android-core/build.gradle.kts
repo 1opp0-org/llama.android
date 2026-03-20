@@ -36,7 +36,6 @@ android {
         consumerProguardFiles("consumer-rules.pro")
 
         ndk {
-//            abiFilters += listOf("x86_64")
             abiFilters += listOf("arm64-v8a", "x86_64")
         }
         externalNativeBuild {
@@ -55,7 +54,6 @@ android {
 //                arguments += "-DGGML_CPU_ALL_VARIANTS=ON"
                 arguments += "-DGGML_CPU_ALL_VARIANTS=OFF"
                 arguments += "-DGGML_LLAMAFILE=OFF"
-                arguments += "-DGGML_CPU_KLEIDIAI=OFF" // this needs cmake 3.24, which is not available on sdkmanager
             }
         }
         aarMetadata {

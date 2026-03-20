@@ -14,12 +14,10 @@ koin = "3.5.3"
 ktor = "3.0.2"
 
 # section: c++
-ndkVersion = "25.1.8937393"
-#ndkVersion = "29.0.13113456"
-# objdump -T cmake | grep GLIBC_ | sed 's/.*GLIBC_\([.0-9]*\).*/\1/g' | sort | uniq
+#ndkVersion = "25.1.8937393"
+ndkVersion = "29.0.13113456"
 #cmakeVersion = "3.30.3" # contains reference to GLIBC 2.28
 cmakeVersion = "3.22.1" # contains reference to GLIBC 2.17; jitpack uses ubuntu 16.04.7 LTS with GLIBC 2.23
-#cmakeVersion = "3.31.6" # this is the version originally asked by llama.cpp
 
 # section: android versions
 compileSdk = "36"
@@ -27,8 +25,8 @@ minSdk = "33"
 targetSdk = "34"
 
 # section: gradle variables
-project-group = "net.amazingapps.llama_android"
-project-version = "0.0.1-SNAPSHOT"
+project-group = "net.amazingapps.llama.android"
+project-version = "0.0.1"
 project-versionCode = "1"
 
 [libraries]

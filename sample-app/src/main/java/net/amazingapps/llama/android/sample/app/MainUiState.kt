@@ -1,4 +1,4 @@
-package net.amazingapps.llama_android.sample.app
+package net.amazingapps.llama.android.sample.app
 
 data class MainUiState(
     val status: String = "Idle",

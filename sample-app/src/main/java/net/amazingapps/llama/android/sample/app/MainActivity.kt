@@ -1,4 +1,4 @@
-package net.amazingapps.llama_android.sample.app
+package net.amazingapps.llama.android.sample.app
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import net.amazingapps.llama_android.sample.app.ui.MainScreen
+import net.amazingapps.llama.android.sample.app.ui.MainScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

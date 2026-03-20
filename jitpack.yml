@@ -12,12 +12,7 @@ before_install:
   - sdk install java 8.0.265-open
   - sdk use java 8.0.265-open
   - yes | sdkmanager --licenses
-#  - yes | sdkmanager --update
-#  - yes | sdkmanager --uninstall "ndk-bundle"
-#  - yes | sdkmanager --install "ndk;29.0.13113456" > /dev/null
   - yes | sdkmanager --install "cmake;3.22.1" > /dev/null
-#  - yes | sdkmanager --install "cmake;3.30.3" > /dev/null
-#  - yes | sdkmanager --install "cmake;3.31.6" > /dev/null
   - ldd /opt/android-sdk-linux/cmake/3.31.6/bin/cmake
   - echo "Install java17.... again"
   - sdk install java 17.0.12-oracle
@@ -27,4 +22,5 @@ install:
   - ./gradlew :llama-android-core:buildCMakeDebug --no-daemon
   - echo "Building project with JDK 17 - kotlin code"
   - ./gradlew :llama-android-core:publishToMavenLocal
+
 
