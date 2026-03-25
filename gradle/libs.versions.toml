@@ -14,20 +14,20 @@ koin = "3.5.3"
 ktor = "3.0.2"
 
 # section: c++
-#ndkVersion = "25.1.8937393"
 ndkVersion = "29.0.13113456"
 #cmakeVersion = "3.30.3" # contains reference to GLIBC 2.28
-cmakeVersion = "3.22.1" # contains reference to GLIBC 2.17; jitpack uses ubuntu 16.04.7 LTS with GLIBC 2.23
+cmakeVersion = "3.31.6" # contains reference to GLIBC 2.28
+#cmakeVersion = "3.28.1" # contains reference to GLIBC 2.17; jitpack uses ubuntu 16.04.7 LTS with GLIBC 2.23
 
 # section: android versions
-compileSdk = "36"
+compileSdk = "34"
 minSdk = "33"
 targetSdk = "34"
 
 # section: gradle variables
 project-group = "net.amazingapps.llama.android"
-project-version = "0.0.1"
-project-versionCode = "1"
+project-version = "0.0.2"
+project-versionCode = "2"
 
 [libraries]
 

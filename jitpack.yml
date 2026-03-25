@@ -6,14 +6,31 @@ before_install:
   - cat /etc/issue
   - uname -a
   - ldd --version
-  # /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.28' not found (required by /opt/android-sdk-linux/cmake/3.31.6/bin/cmake)
+
+  # why do we install cmake and ninja manually? jitpack is stuck back on ubuntu 16.04,
+  # and llama.cpp needs a modern version of cmake that needs a modern version of glibc.
+  # So, instead of using android ecosystem to install cmake and ninja, we install them from
+  # official repositories that are kind enough to link to a VERY old glibc version.
+  - echo "Installing cmake 3.31.6 from  Kitware (official)"
+  - mkdir -p ~/bin
+  - wget https://github.com/Kitware/CMake/releases/download/v3.31.6/cmake-3.31.6-linux-x86_64.tar.gz -P ~/bin --quiet > /dev/null
+  - tar -xzf ~/bin/cmake-3.31.6-linux-x86_64.tar.gz -C ~/bin > /dev/null
+
+  - echo "Installing ninja 1.12.1 from ninja-build (official)"
+  - wget https://github.com/ninja-build/ninja/releases/download/v1.12.1/ninja-linux.zip -P ~/bin > /dev/null
+  - unzip ~/bin/ninja-linux.zip -d ~/bin/cmake-3.31.6-linux-x86_64/bin/ > /dev/null
+  - chmod +x ~/bin/cmake-3.31.6-linux-x86_64/bin/ninja
+
+  - echo "cmake.dir=$HOME/bin/cmake-3.31.6-linux-x86_64" >> local.properties
+
+  - ldd ~/bin/cmake-3.31.6-linux-x86_64/bin/cmake
+  - $HOME/bin/cmake-3.31.6-linux-x86_64/bin/ninja --version
   - echo "Accepting licenses for Android SDK"
-  # Installing Java 8 because Android SDK manager needs XML Binds which not exists in JDK 17
-  - sdk install java 8.0.265-open
+
+  - sdk install java 8.0.265-open > /dev/null
   - sdk use java 8.0.265-open
-  - yes | sdkmanager --licenses
-  - yes | sdkmanager --install "cmake;3.22.1" > /dev/null
-  - ldd /opt/android-sdk-linux/cmake/3.31.6/bin/cmake
+  - yes | sdkmanager --licenses > /dev/null
+
   - echo "Install java17.... again"
   - sdk install java 17.0.12-oracle
   - sdk use java 17.0.12-oracle

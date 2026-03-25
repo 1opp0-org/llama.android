@@ -23,7 +23,7 @@ interface InferenceEngine {
     /**
      * Sends a system prompt to the loaded model
      */
-    suspend fun setSystemPrompt(systemPrompt: String)
+    suspend fun setSystemPrompt(prompt: String)
 
     /**
      * Sends a user prompt to the loaded model and returns a Flow of generated tokens.
