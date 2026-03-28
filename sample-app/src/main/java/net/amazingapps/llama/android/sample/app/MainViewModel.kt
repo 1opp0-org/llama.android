@@ -32,42 +32,49 @@ class MainViewModel(
 
         val filename = "smollm2-360m-q8_0.gguf"
 
+
+        val urlFastInference =
+            "https://huggingface.co/yamap59/Qwen3.5-0.8B-Instruct-FT-GGUF/resolve/main/qwen3.5-0.8b-instruct.gguf?download=true"
+
+
+
         viewModelScope.launch {
-            val modelFile = downloadModel(url, filename)
+            val modelFile = downloadModel(urlFastInference, "fastInference.gguf")
             if (modelFile != null) {
                 loadModel(modelFile.path)
             }
         }
     }
 
-    private suspend fun downloadModel(url: String, filename: String): File? = withContext(Dispatchers.IO) {
-        mutableUiState.update { it.copy(isDownloading = true, status = "Starting download...") }
+    private suspend fun downloadModel(url: String, filename: String): File? =
+        withContext(Dispatchers.IO) {
+            mutableUiState.update { it.copy(isDownloading = true, status = "Starting download...") }
 
 
-        val modelFile = modelDownloader.ensureModelDownloaded(
-            url = url,
-            modelName = filename
-        ) { progress ->
-            mutableUiState.update { it.copy(status = "Downloading: ${"%.2f".format(progress * 100)}%") }
-        }
-
-        if (modelFile == null) {
-            mutableUiState.update {
-                it.copy(
-                    isDownloading = false,
-                    status = "Download Failed"
-                )
+            val modelFile = modelDownloader.ensureModelDownloaded(
+                url = url,
+                modelName = filename
+            ) { progress ->
+                mutableUiState.update { it.copy(status = "Downloading: ${"%.2f".format(progress * 100)}%") }
             }
+
+            if (modelFile == null) {
+                mutableUiState.update {
+                    it.copy(
+                        isDownloading = false,
+                        status = "Download Failed"
+                    )
+                }
+            }
+            modelFile
         }
-        modelFile
-    }
 
     private suspend fun loadModel(path: String) = withContext(Dispatchers.IO) {
         mutableUiState.update { it.copy(status = "Waiting for engine initialization...") }
-        
+
         // Wait for engine to be initialized
-        engine.state.first { 
-            it is InferenceEngine.State.Initialized || it is InferenceEngine.State.ModelReady 
+        engine.state.first {
+            it is InferenceEngine.State.Initialized || it is InferenceEngine.State.ModelReady
         }
 
         mutableUiState.update { it.copy(status = "Loading model...") }
@@ -100,7 +107,7 @@ class MainViewModel(
                     userInput = ""
                 )
             }
-            
+
             viewModelScope.launch(Dispatchers.Default) {
                 engine.sendUserPrompt(currentInput)
                     .onCompletion {

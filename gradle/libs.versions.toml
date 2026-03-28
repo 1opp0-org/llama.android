@@ -19,7 +19,7 @@ cmakeVersion = "3.31.6"
 
 # section: android versions
 compileSdk = "34"
-minSdk = "33"
+minSdk = "30" # as of March 2026 this covers 83% of devices, according to android studio "new project" wizard
 targetSdk = "34"
 
 # section: gradle variables

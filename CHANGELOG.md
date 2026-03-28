@@ -1,5 +1,8 @@
 # Version 0.0
 
+## 0.0.3
+- Downgrade minimum sdk from 33 to 30 (covers 83% of all devices)
+
 ## 0.0.2
 
 - Upgrades from cmake 3.22.1 back to previous value 3.31.6
