@@ -166,7 +166,7 @@ internal class InferenceEngineImpl private constructor(
                 _state.value = InferenceEngine.State.LoadingModel
                 load(pathToModel).let {
                     // TODO-han.yin: find a better way to pass other error codes
-                    if (it != 0) throw UnsupportedArchitectureException()
+                    if (it != 0) throw RuntimeException("Failed to load model: $it. Check a) for proper architecture and b) your application manifest for <application ... android:extractNativeLibs=\"true\" ...> OR android.packaging.jniLibs { useLegacyPackaging = true } ")
                 }
                 prepare().let {
                     if (it != 0) throw IOException("Failed to prepare resources")

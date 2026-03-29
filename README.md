@@ -27,6 +27,29 @@ It is also available at:
 
 This library is published on Jitpack: https://jitpack.io/#1opp0-org/llama.android
 
+## Set up your application manifest
+
+To use this library you must enable the following in your application module's manifest:
+
+```xml
+<application
+...
+    android:extractNativeLibs="true"
+...
+    >
+```
+
+If you are writing instrumented tests in a library, the solution above may not work. Use this block:
+
+```kotlin
+android {
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+    ...
+```
+
+## Add dependency
 In your settings.gradle.kts, do
 
 ```kotlin
@@ -34,7 +57,7 @@ dependencyResolutionManagement {
 		repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
 		repositories {
 			mavenCentral()
-			maven { url = uri("https://jitpack.io") }
+			maven { url = uri("https://jitpack.io") } // be nice to jitpack and keep this last
 		}
 	}
 ```
@@ -43,7 +66,7 @@ Then in the module where you want to use the library, add the dependency:
 
 ```kotlin
 dependencies {
-	        implementation("com.github.1opp0-org:llama.android:<version>")
+    implementation("com.github.1opp0-org:llama.android:<version>")
 }
 
 ```

@@ -36,7 +36,7 @@ before_install:
 
 install:
   - echo "Building project with JDK 17 - c++ code"
-  - ./gradlew :llama-android-core:buildCMakeDebug --no-daemon
+  - ./gradlew :llama-android-core:buildCMakeRelease --no-daemon
   - echo "Building project with JDK 17 - kotlin code"
   - ./gradlew :llama-android-core:publishToMavenLocal
 

@@ -1,3 +1,5 @@
+import java.net.URI
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
@@ -40,20 +42,12 @@ android {
         }
         externalNativeBuild {
             cmake {
-                arguments += "-DCMAKE_BUILD_TYPE=Release"
-//                arguments += "-DCMAKE_BUILD_TYPE=Debug"
-                arguments += "-DCMAKE_MESSAGE_LOG_LEVEL=DEBUG"
-                arguments += "-DCMAKE_VERBOSE_MAKEFILE=ON"
-
                 arguments += "-DBUILD_SHARED_LIBS=ON"
                 arguments += "-DLLAMA_BUILD_COMMON=ON"
                 arguments += "-DLLAMA_OPENSSL=OFF"
-
                 arguments += "-DGGML_NATIVE=OFF"
+
                 arguments += "-DGGML_BACKEND_DL=ON"
-//                arguments += "-DGGML_CPU_ALL_VARIANTS=ON"
-                arguments += "-DGGML_CPU_ALL_VARIANTS=OFF"
-                arguments += "-DGGML_LLAMAFILE=OFF"
             }
         }
         aarMetadata {
@@ -66,6 +60,40 @@ android {
             version = libs.versions.cmakeVersion.get()
         }
     }
+    buildTypes {
+        release {
+            externalNativeBuild {
+                cmake {
+                    arguments += "-DCMAKE_BUILD_TYPE=Release"
+
+                    arguments += "-DCMAKE_MESSAGE_LOG_LEVEL=INFO"
+                    arguments += "-DCMAKE_VERBOSE_MAKEFILE=OFF"
+
+                    arguments += "-DGGML_CPU_ALL_VARIANTS=ON"
+                    arguments += "-DGGML_LLAMAFILE=ON"
+                    arguments += "-DGGML_CPU_KLEIDIAI=ON"
+                }
+                proguardFiles(
+                    getDefaultProguardFile("proguard-android-optimize.txt"),
+                    "proguard-rules.pro"
+                )
+            }
+        }
+        debug {
+            externalNativeBuild {
+                cmake {
+                    arguments += "-DCMAKE_BUILD_TYPE=Debug"
+
+                    arguments += "-DCMAKE_MESSAGE_LOG_LEVEL=DEBUG"
+                    arguments += "-DCMAKE_VERBOSE_MAKEFILE=ON"
+
+                    arguments += "-DGGML_CPU_ALL_VARIANTS=OFF"
+                    arguments += "-DGGML_LLAMAFILE=OFF"
+                }
+            }
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -79,6 +107,9 @@ android {
     }
 
     packaging {
+        jniLibs {
+            useLegacyPackaging = true // this has impact on instrumented tests but not on modules that depend on this
+        }
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
@@ -98,4 +129,48 @@ dependencies {
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.androidx.test.rules)
     androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.kotlinx.coroutines.test)
+}
+
+tasks.register("downloadTestModel") {
+    val modelUrl =
+        "https://huggingface.co/HuggingFaceTB/SmolLM2-360M-Instruct-GGUF/resolve/main/smollm2-360m-instruct-q8_0.gguf"
+
+    val outputDir = file("src/androidTest/assets/")
+    val outputFile = File(outputDir, "test_model.gguf")
+
+    outputs.file(outputFile)
+
+    doLast {
+        if (!outputDir.exists()) outputDir.mkdirs()
+        if (!outputFile.exists()) {
+            println("Downloading test model from $modelUrl...")
+            URI(modelUrl).toURL().openStream().use { input ->
+                outputFile.outputStream().use { output ->
+                    input.copyTo(output)
+                }
+            }
+            println("Download complete: ${outputFile.absolutePath}")
+        } else {
+            println("Test model already exists, skipping download: ${outputFile.path} - ${outputFile.length() / 1024 / 1024} MB")
+        }
+    }
+}
+
+// Ensure the model is downloaded before building the instrumented test
+tasks.matching {
+    it.name.contains("connectedDebugAndroidTest") ||
+            it.name.contains("packageDebugAndroidTest") ||
+            (it.name.startsWith("merge") && it.name.endsWith("AndroidTestAssets")) ||
+            (it.name.startsWith("process") && it.name.endsWith("Resources")) ||
+            (it.name.startsWith("generate") && it.name.endsWith("TestResources"))
+
+}.all {
+    dependsOn("downloadTestModel")
+}
+
+tasks.named<Delete>("clean") {
+    delete(file("src/androidTest/assets/test_model.gguf"))
+
+    delete(".cxx")
 }
