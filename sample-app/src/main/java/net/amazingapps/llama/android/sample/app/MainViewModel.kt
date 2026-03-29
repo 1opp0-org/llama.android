@@ -36,10 +36,14 @@ class MainViewModel(
         val urlFastInference =
             "https://huggingface.co/yamap59/Qwen3.5-0.8B-Instruct-FT-GGUF/resolve/main/qwen3.5-0.8b-instruct.gguf?download=true"
 
-
+//        llama-3.2-1b-q4_0.gguf
+//        https://huggingface.co/polyverse/Llama-3.2-1B-Q4_0-GGUF/blob/main/llama-3.2-1b-q4_0.gguf
+        val urlLlama = "https://huggingface.co/polyverse/Llama-3.2-1B-Q4_0-GGUF/resolve/main/llama-3.2-1b-q4_0.gguf"
+//        val urlLlama = "https://huggingface.co/polyverse/Llama-3.2-1B-Q4_0-GGUF/blob/main/llama-3.2-1b-q4_0.gguf"
 
         viewModelScope.launch {
-            val modelFile = downloadModel(urlFastInference, "fastInference.gguf")
+            val modelFile = downloadModel(urlLlama, "llama.gguf")
+//            val modelFile = downloadModel(urlFastInference, "fastInference.gguf")
             if (modelFile != null) {
                 loadModel(modelFile.path)
             }

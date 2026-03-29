@@ -40,8 +40,8 @@ android {
         }
         externalNativeBuild {
             cmake {
-//                arguments += "-DCMAKE_BUILD_TYPE=Release"
-                arguments += "-DCMAKE_BUILD_TYPE=Debug"
+                arguments += "-DCMAKE_BUILD_TYPE=Release"
+//                arguments += "-DCMAKE_BUILD_TYPE=Debug"
                 arguments += "-DCMAKE_MESSAGE_LOG_LEVEL=DEBUG"
                 arguments += "-DCMAKE_VERBOSE_MAKEFILE=ON"
 
@@ -87,15 +87,15 @@ android {
     publishing {
         singleVariant("release") {
             withJavadocJar()
+            withSourcesJar()
         }
     }
 }
 
 dependencies {
-//    implementation(libs.androidx.core.ktx)
     implementation(libs.kotlinx.coroutines.android)
-//    implementation(libs.androidx.datastore.preferences)
 
-//    testImplementation(libs.junit)
-//    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.rules)
+    androidTestImplementation(libs.androidx.test.ext.junit)
 }

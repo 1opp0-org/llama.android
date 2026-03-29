@@ -2,6 +2,7 @@
 
 ## 0.0.3
 - Downgrade minimum sdk from 33 to 30 (covers 83% of all devices)
+- Compile CPP code with release optimizations (it's an order of magnitude faster than debug)
 
 ## 0.0.2
 
