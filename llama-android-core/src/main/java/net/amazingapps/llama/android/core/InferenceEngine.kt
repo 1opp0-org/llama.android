@@ -1,8 +1,8 @@
-package com.arm.aichat
+package net.amazingapps.llama.android.core
 
-import com.arm.aichat.InferenceEngine.State
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
+import net.amazingapps.llama.android.core.InferenceEngine.State
 
 /**
  * Interface defining the core LLM inference operations.

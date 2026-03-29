@@ -1,4 +1,4 @@
-package com.arm.aichat.gguf
+package net.amazingapps.llama.android.core.gguf
 
 import kotlin.collections.get
 

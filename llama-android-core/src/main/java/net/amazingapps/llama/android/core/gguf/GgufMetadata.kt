@@ -1,7 +1,6 @@
-package com.arm.aichat.gguf
+package net.amazingapps.llama.android.core.gguf
 
 import java.io.IOException
-
 
 /**
  * Structured metadata of GGUF

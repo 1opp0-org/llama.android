@@ -1,8 +1,8 @@
 package net.amazingapps.llama.android.sample.app
 
-import com.arm.aichat.AiChat
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
+import net.amazingapps.llama.android.core.AiChat
 import net.amazingapps.llama.android.sample.app.repository.ModelDownloader
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module

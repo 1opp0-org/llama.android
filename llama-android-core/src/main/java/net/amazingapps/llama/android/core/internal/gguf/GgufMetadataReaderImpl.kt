@@ -1,10 +1,10 @@
-package com.arm.aichat.internal.gguf
+package net.amazingapps.llama.android.core.internal.gguf
 
 import android.content.Context
 import android.net.Uri
-import com.arm.aichat.gguf.GgufMetadata
-import com.arm.aichat.gguf.GgufMetadataReader
-import com.arm.aichat.gguf.InvalidFileFormatException
+import net.amazingapps.llama.android.core.gguf.GgufMetadata
+import net.amazingapps.llama.android.core.gguf.GgufMetadataReader
+import net.amazingapps.llama.android.core.gguf.InvalidFileFormatException
 import java.io.File
 import java.io.IOException
 import java.io.InputStream

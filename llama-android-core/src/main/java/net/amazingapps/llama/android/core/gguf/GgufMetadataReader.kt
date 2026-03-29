@@ -1,8 +1,8 @@
-package com.arm.aichat.gguf
+package net.amazingapps.llama.android.core.gguf
 
 import android.content.Context
 import android.net.Uri
-import com.arm.aichat.internal.gguf.GgufMetadataReaderImpl
+import net.amazingapps.llama.android.core.internal.gguf.GgufMetadataReaderImpl
 import java.io.File
 import java.io.IOException
 import java.io.InputStream

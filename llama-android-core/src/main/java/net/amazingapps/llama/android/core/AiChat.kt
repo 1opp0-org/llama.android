@@ -1,7 +1,8 @@
-package com.arm.aichat
+package net.amazingapps.llama.android.core
+
 
 import android.content.Context
-import com.arm.aichat.internal.InferenceEngineImpl
+import net.amazingapps.llama.android.core.internal.InferenceEngineImpl
 
 /**
  * Main entry point for Arm's AI Chat library.

@@ -1,10 +1,7 @@
-package com.arm.aichat.internal
+package net.amazingapps.llama.android.core.internal
 
 import android.content.Context
 import android.util.Log
-import com.arm.aichat.InferenceEngine
-import com.arm.aichat.UnsupportedArchitectureException
-import com.arm.aichat.internal.InferenceEngineImpl.Companion.getInstance
 import dalvik.annotation.optimization.FastNative
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -21,6 +18,8 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import net.amazingapps.llama.android.core.InferenceEngine
+import net.amazingapps.llama.android.core.internal.InferenceEngineImpl.Companion.getInstance
 import java.io.File
 import java.io.IOException
 

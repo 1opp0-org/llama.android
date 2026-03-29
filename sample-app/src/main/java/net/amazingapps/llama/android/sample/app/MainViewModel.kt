@@ -2,7 +2,6 @@ package net.amazingapps.llama.android.sample.app
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.arm.aichat.InferenceEngine
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,6 +11,7 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import net.amazingapps.llama.android.core.InferenceEngine
 import net.amazingapps.llama.android.sample.app.repository.ModelDownloader
 import java.io.File
 
