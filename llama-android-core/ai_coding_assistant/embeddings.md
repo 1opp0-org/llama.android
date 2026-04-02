@@ -1,0 +1,12 @@
+# Summary
+- **Status**: New Feature.
+- **What it's about**: Generating high-dimensional numerical representations (embeddings) of text. These embeddings capture the semantic meaning of the text and can be used for tasks like semantic search, classification (by comparing the similarity between a prompt embedding and label embeddings), and clustering.
+- **JNI Implementation**: This feature primarily requires JNI code to expose the `llama.cpp` functionality for embedding generation (e.g., `llama_get_embeddings`). The JNI layer will be responsible for handling the input text, calling the C++ embedding function, and converting the resulting C++ float array into a Kotlin `FloatArray`.
+- **Estimation**: 
+    - **C++ JNI**: Approximately 20-30 lines of code for the JNI function, memory management of the float array, and error handling.
+    - **Kotlin**: Approximately 50-80 lines of code for calling the JNI function, performing vector operations (like cosine similarity for classification), and integrating with higher-level application logic.
+- **Caveats**: 
+    - **Model Type**: While many LLMs can produce embeddings, dedicated embedding models (or general LLMs specifically fine-tuned for embedding tasks) typically offer better performance and quality for semantic tasks.
+    - **Single Model, Dual Use**: Yes, it is generally possible to load a model once and use it for *both* embeddings and text generation. However, this often requires setting the `llama_context_params::embeddings` flag to `true` during the initial `llama_init_from_model` call. This flag enables the necessary internal states for embedding extraction without typically hindering text generation. You don't necessarily need to load two separate instances of the model.
+    - Handling large `FloatArray` transfers across the JNI bridge should be optimized for performance.
+    - Semantic similarity calculations (e.g., cosine similarity) will need to be implemented in Kotlin.

@@ -29,7 +29,7 @@ targetSdk = "34"
 
 # section: gradle variables
 project-group = "net.amazingapps.llama.android"
-project-version = "0.0.3-SNAPSHOT"
+project-version = "0.0.3"
 project-versionCode = "3"
 
 [libraries]

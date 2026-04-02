@@ -1,0 +1,13 @@
+# Summary
+- **Status**: Feature Enhancement (Temperature) and New Feature (Repetition Penalties).
+- **What it's about**: This document covers advanced sampling parameters designed to fine-tune the behavior of text generation:
+    - **Temperature**: Controls the randomness/creativity of the output. Higher values lead to more diverse text, lower values to more deterministic and focused text.
+    - **Repetition Penalties (Presence, Frequency, and Repetition)**: Mechanisms to prevent the model from getting stuck in loops or repeating phrases by penalizing tokens that have appeared recently in the generation history.
+- **JNI Implementation**: This involves exposing new JNI functions or enhancing existing ones to allow dynamic adjustment of these sampling parameters. The `ai_chat.cpp` file already uses a `common_sampler`, which can be configured with these parameters. The JNI layer will bridge Kotlin calls to update the `common_params_sampling` struct and then apply these to the `common_sampler`. No significant changes are expected in the core `llama.cpp` sampling logic.
+- **Estimation**: 
+    - **C++ JNI**: Approximately 20-30 lines of code to expose a comprehensive set of sampling parameters (temperature, repeat penalty, frequency penalty, presence penalty, and their respective `penalty_last_n` values).
+    - **Kotlin**: Approximately 50-80 lines of code to define a sampling configuration data class, pass it through JNI, and integrate it into the generation API.
+- **Caveats**: 
+    - **Tuning Complexity**: Finding the optimal balance between these parameters often requires experimentation, as they interact with each other and are highly dependent on the specific model, task, and desired output style.
+    - **Model Sensitivity**: Small models can be particularly sensitive to these parameters; incorrect tuning can lead to incoherent text (high temperature) or overly stifled, unnatural output (aggressive penalties).
+    - **Default Values**: Establishing sensible default values for these parameters in the Kotlin API is crucial to provide a good out-of-the-box experience.

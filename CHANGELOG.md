@@ -4,6 +4,7 @@
 - Downgrade minimum sdk from 33 to 30 (covers 83% of all devices)
 - Compile CPP code with release optimizations (it's an order of magnitude faster than debug)
 - Change package for classes from `com.arm.aichat` to `net.amazingapps.llama.android.core` 
+- Update llama.cpp branch to `e15efe0` (2026-04-02)
 
 ## 0.0.2
 

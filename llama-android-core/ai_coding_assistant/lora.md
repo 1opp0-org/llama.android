@@ -1,0 +1,11 @@
+# Summary
+- **Status**: New Feature.
+- **What it's about**: Enabling the loading and application of LoRA (Low-Rank Adaptation) files to a base model at runtime. This allows for model specialization (e.g., specific domains like coding or medical) by downloading small "patch" files (10-100MB) instead of entirely new multi-gigabyte models. LoRA fine-tunes a model's behavior without modifying its core weights, making it efficient for various tasks.
+- **JNI Implementation**: This feature only requires JNI-level code to bridge the Kotlin API to the existing `llama_model_apply_lora_from_file` function in the core library. The JNI layer will handle passing the LoRA file path and any other necessary parameters to the C++ function. No changes to the underlying C++ inference or model loading logic are required beyond exposing this function.
+- **Estimation**: 
+    - **C++ JNI**: Approximately 30 lines of code (handling path strings and error codes returned by `llama_model_apply_lora_from_file`).
+    - **Kotlin**: Approximately 50 lines (managing LoRA file paths, determining when to apply/unapply, and exposing the option to the application's UI or logic).
+- **Caveats**: 
+    - **Compatibility**: LoRA adapters are strictly tied to the architecture of the base model they were trained for (e.g., a LoRA trained for Llama-3 will not work with a Mistral base model).
+    - **Performance Overhead**: Applying an adapter incurs a small one-time initialization latency during the loading phase as the base model is "patched." However, once applied, inference speed is largely unaffected.
+    - **Resource Management**: Properly managing the lifecycle of loaded LoRA adapters (applying, unapplying, or swapping) is important to avoid memory leaks or unexpected behavior.
