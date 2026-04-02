@@ -6,6 +6,7 @@ before_install:
   - cat /etc/issue
   - uname -a
   - ldd --version
+  - sdk update
 
   # why do we install cmake and ninja manually? jitpack is stuck back on ubuntu 16.04,
   # and llama.cpp needs a modern version of cmake that needs a modern version of glibc.
@@ -22,8 +23,6 @@ before_install:
   - chmod +x ~/bin/cmake-3.31.6-linux-x86_64/bin/ninja
 
   - echo "cmake.dir=$HOME/bin/cmake-3.31.6-linux-x86_64" >> local.properties
-  - ldd ~/bin/cmake-3.31.6-linux-x86_64/bin/cmake
-  - $HOME/bin/cmake-3.31.6-linux-x86_64/bin/ninja --version
 
   - echo "Accepting licenses for Android SDK"
   - sdk install java 8.0.265-open > /dev/null
@@ -34,8 +33,12 @@ before_install:
   - sdk install java 17.0.12-oracle
   - sdk use java 17.0.12-oracle
 
+  - source jitpack_rustup.sh
+  - install_rustup
+  - verify_compilation_android
+
 install:
-  - echo "Building project with JDK 17 - c++ code"
+  - echo "Building project with JDK 17 - c++ code on - rust code on"
   - ./gradlew :llama-android-core:buildCMakeRelease --no-daemon
   - echo "Building project with JDK 17 - kotlin code"
   - ./gradlew :llama-android-core:publishToMavenLocal

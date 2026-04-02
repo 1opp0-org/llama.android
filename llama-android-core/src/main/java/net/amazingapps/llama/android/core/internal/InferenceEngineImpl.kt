@@ -1,7 +1,6 @@
 package net.amazingapps.llama.android.core.internal
 
 import android.content.Context
-import android.util.Log
 import dalvik.annotation.optimization.FastNative
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -19,7 +18,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import net.amazingapps.llama.android.core.InferenceEngine
+import net.amazingapps.llama.android.core.guidance.LlGuidanceGrammar
 import net.amazingapps.llama.android.core.internal.InferenceEngineImpl.Companion.getInstance
+import timber.log.Timber
 import java.io.File
 import java.io.IOException
 
@@ -47,7 +48,6 @@ internal class InferenceEngineImpl private constructor(
 ) : InferenceEngine {
 
     companion object {
-        private val TAG = InferenceEngineImpl::class.java.simpleName
 
         @Volatile
         private var instance: InferenceEngine? = null
@@ -65,10 +65,10 @@ internal class InferenceEngineImpl private constructor(
                 require(nativeLibDir.isNotBlank()) { "Expected a valid native library path!" }
 
                 try {
-                    Log.i(TAG, "Instantiating InferenceEngineImpl,,,")
+                    Timber.d("Instantiating InferenceEngineImpl,,,")
                     InferenceEngineImpl(nativeLibDir).also { instance = it }
                 } catch (e: UnsatisfiedLinkError) {
-                    Log.e(TAG, "Failed to load native library from $nativeLibDir", e)
+                    Timber.e(e, "Failed to load native library from $nativeLibDir")
                     throw e
                 }
             }
@@ -103,6 +103,23 @@ internal class InferenceEngineImpl private constructor(
     private external fun generateNextToken(): String?
 
     @FastNative
+    private external fun nativeSetConstraint(json: String?): Int
+
+    override fun setConstraint(constraint: String?) {
+        if (LlGuidanceGrammar.isGrammarLLGuidance(constraint) && !isLlguidanceSupported()) {
+            throw IllegalArgumentException("You're attempting to use LLGuidance Grammar. However LLGuidance was disabled during the build.")
+        }
+        nativeSetConstraint(constraint)
+    }
+
+    @FastNative
+    private external fun nativeIsLlguidanceSupported(): Boolean
+
+    override fun isLlguidanceSupported(): Boolean {
+        return nativeIsLlguidanceSupported()
+    }
+
+    @FastNative
     private external fun unload()
 
     @FastNative
@@ -130,14 +147,14 @@ internal class InferenceEngineImpl private constructor(
                     "Cannot load native library in ${_state.value.javaClass.simpleName}!"
                 }
                 _state.value = InferenceEngine.State.Initializing
-                Log.i(TAG, "Loading native library...")
+                Timber.d("Loading native library...")
                 System.loadLibrary("ai-chat")
                 init(nativeLibDir)
                 _state.value = InferenceEngine.State.Initialized
-                Log.i(TAG, "Native library loaded! System info: \n${systemInfo()}")
+                Timber.v("Native library loaded! System info: \n${systemInfo()}")
 
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to load native library", e)
+                Timber.e(e, "Failed to load native library")
                 throw e
             }
         }
@@ -153,14 +170,14 @@ internal class InferenceEngineImpl private constructor(
             }
 
             try {
-                Log.i(TAG, "Checking access to model file... \n$pathToModel")
+                Timber.d("Checking access to model file... \n$pathToModel")
                 File(pathToModel).let {
                     require(it.exists()) { "File not found: $pathToModel" }
                     require(it.isFile) { "Not a valid file" }
                     require(it.canRead()) { "Cannot read file" }
                 }
 
-                Log.i(TAG, "Loading model... \n$pathToModel")
+                Timber.d("Loading model... \n$pathToModel")
                 _readyForSystemPrompt = false
                 _state.value = InferenceEngine.State.LoadingModel
                 load(pathToModel).let {
@@ -170,13 +187,13 @@ internal class InferenceEngineImpl private constructor(
                 prepare().let {
                     if (it != 0) throw IOException("Failed to prepare resources")
                 }
-                Log.i(TAG, "Model loaded!")
+                Timber.i("Model loaded!")
                 _readyForSystemPrompt = true
 
                 _cancelGeneration = false
                 _state.value = InferenceEngine.State.ModelReady
             } catch (e: Exception) {
-                Log.e(TAG, (e.message ?: "Error loading model") + "\n" + pathToModel, e)
+                Timber.e(e, "%s%s", e.message ?: "Error loading model", pathToModel)
                 _state.value = InferenceEngine.State.Error(e)
                 throw e
             }
@@ -195,7 +212,7 @@ internal class InferenceEngineImpl private constructor(
                 "Cannot process system prompt in ${_state.value.javaClass.simpleName}!"
             }
 
-            Log.i(TAG, "Sending system prompt...")
+            Timber.d("Sending system prompt...")
             _readyForSystemPrompt = false
             _state.value = InferenceEngine.State.ProcessingSystemPrompt
             processSystemPrompt(prompt).let { result ->
@@ -206,7 +223,7 @@ internal class InferenceEngineImpl private constructor(
                     }
                 }
             }
-            Log.i(TAG, "System prompt processed! Awaiting user prompt...")
+            Timber.d("System prompt processed! Awaiting user prompt...")
             _state.value = InferenceEngine.State.ModelReady
         }
 
@@ -223,18 +240,18 @@ internal class InferenceEngineImpl private constructor(
         }
 
         try {
-            Log.i(TAG, "Sending user prompt...")
+            Timber.d("Sending user prompt...")
             _readyForSystemPrompt = false
             _state.value = InferenceEngine.State.ProcessingUserPrompt
 
             processUserPrompt(message, predictLength).let { result ->
                 if (result != 0) {
-                    Log.e(TAG, "Failed to process user prompt: $result")
+                    Timber.e("Failed to process user prompt: $result")
                     return@flow
                 }
             }
 
-            Log.i(TAG, "User prompt processed. Generating assistant prompt...")
+            Timber.i("User prompt processed. Generating assistant prompt...")
             _state.value = InferenceEngine.State.Generating
             while (!_cancelGeneration) {
                 generateNextToken()?.let { utf8token ->
@@ -242,17 +259,17 @@ internal class InferenceEngineImpl private constructor(
                 } ?: break
             }
             if (_cancelGeneration) {
-                Log.i(TAG, "Assistant generation aborted per requested.")
+                Timber.i("Assistant generation aborted per requested.")
             } else {
-                Log.i(TAG, "Assistant generation complete. Awaiting user prompt...")
+                Timber.i("Assistant generation complete. Awaiting user prompt...")
             }
             _state.value = InferenceEngine.State.ModelReady
         } catch (e: CancellationException) {
-            Log.i(TAG, "Assistant generation's flow collection cancelled.")
+            Timber.i("Assistant generation's flow collection cancelled.")
             _state.value = InferenceEngine.State.ModelReady
             throw e
         } catch (e: Exception) {
-            Log.e(TAG, "Error during generation!", e)
+            Timber.e(e, "Error during generation!")
             _state.value = InferenceEngine.State.Error(e)
             throw e
         }
@@ -266,7 +283,7 @@ internal class InferenceEngineImpl private constructor(
             check(_state.value is InferenceEngine.State.ModelReady) {
                 "Benchmark request discarded due to: $state"
             }
-            Log.i(TAG, "Start benchmark (pp: $pp, tg: $tg, pl: $pl, nr: $nr)")
+            Timber.i("Start benchmark (pp: $pp, tg: $tg, pl: $pl, nr: $nr)")
             _readyForSystemPrompt = false   // Just to be safe
             _state.value = InferenceEngine.State.Benchmarking
             benchModel(pp, tg, pl, nr).also {
@@ -282,21 +299,21 @@ internal class InferenceEngineImpl private constructor(
         runBlocking(llamaDispatcher) {
             when (val state = _state.value) {
                 is InferenceEngine.State.ModelReady -> {
-                    Log.i(TAG, "Unloading model and free resources...")
+                    Timber.d("Unloading model and free resources...")
                     _readyForSystemPrompt = false
                     _state.value = InferenceEngine.State.UnloadingModel
 
                     unload()
 
                     _state.value = InferenceEngine.State.Initialized
-                    Log.i(TAG, "Model unloaded!")
+                    Timber.i("Model unloaded!")
                     Unit
                 }
 
                 is InferenceEngine.State.Error -> {
-                    Log.i(TAG, "Resetting error states...")
+                    Timber.d("Resetting error states...")
                     _state.value = InferenceEngine.State.Initialized
-                    Log.i(TAG, "States reset!")
+                    Timber.i("States reset!")
                     Unit
                 }
 
@@ -312,7 +329,7 @@ internal class InferenceEngineImpl private constructor(
         _cancelGeneration = true
         runBlocking(llamaDispatcher) {
             _readyForSystemPrompt = false
-            when(_state.value) {
+            when (_state.value) {
                 is InferenceEngine.State.Uninitialized -> {}
                 is InferenceEngine.State.Initialized -> shutdown()
                 else -> { unload(); shutdown() }
