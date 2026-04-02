@@ -1,4 +1,9 @@
-# Version 0.0
+# Version 0.0.x
+
+## 0.0.4
+- Allows constraints on token generation through IGrammar, which is implemented by GBNFGrammar and LLGuidanceGrammar
+- Initial support for LLGuidance, which implements a variant of Lark Grammar;
+  - since LLGuidance is written in Rust, this version also enables Rust toolchain; see instructions on [README.md]
 
 ## 0.0.3
 - Downgrade minimum sdk from 33 to 30 (covers 83% of all devices)

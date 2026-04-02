@@ -3,6 +3,7 @@ package net.amazingapps.llama.android.core
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import net.amazingapps.llama.android.core.InferenceEngine.State
+import net.amazingapps.llama.android.core.guidance.IGrammar
 
 /**
  * Interface defining the core LLM inference operations.
@@ -34,6 +35,26 @@ interface InferenceEngine {
      * Runs a benchmark with the specified parameters.
      */
     suspend fun bench(pp: Int, tg: Int, pl: Int, nr: Int = 1): String
+
+    /**
+     * Sets a constraint for the next generation task.
+     * Passing null clears any active constraint.
+     *
+     * If a LLGuidance grammar is passed in [constraint] but Llguidance is disabled it will
+     * throw an exception.
+     *
+     * It does not check for grammar validation; in such cases the inference usually works
+     * as if there are no constraints.
+     *
+     * See also [IGrammar] and [isLlguidanceSupported]
+     */
+    fun setConstraint(constraint: String?)
+
+    /**
+     * Returns true if the native library was built with LLGuidance support.
+     * LLgui
+     */
+    fun isLlguidanceSupported(): Boolean
 
     /**
      * Unloads the currently loaded model.
@@ -73,17 +94,17 @@ interface InferenceEngine {
 
 val State.isUninterruptible
     get() = this is State.Initializing ||
-        this is State.LoadingModel ||
-        this is State.UnloadingModel ||
-        this is State.Benchmarking ||
-        this is State.ProcessingSystemPrompt ||
-        this is State.ProcessingUserPrompt
+            this is State.LoadingModel ||
+            this is State.UnloadingModel ||
+            this is State.Benchmarking ||
+            this is State.ProcessingSystemPrompt ||
+            this is State.ProcessingUserPrompt
 
 val State.isModelLoaded: Boolean
     get() = this is State.ModelReady ||
-        this is State.Benchmarking ||
-        this is State.ProcessingSystemPrompt ||
-        this is State.ProcessingUserPrompt ||
-        this is State.Generating
+            this is State.Benchmarking ||
+            this is State.ProcessingSystemPrompt ||
+            this is State.ProcessingUserPrompt ||
+            this is State.Generating
 
 class UnsupportedArchitectureException : Exception()

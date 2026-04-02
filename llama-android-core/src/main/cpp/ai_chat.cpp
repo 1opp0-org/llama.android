@@ -5,11 +5,17 @@
 #include <string>
 #include <unistd.h>
 #include <sampling.h>
+//#include <cstring> // For memcmp
 
 #include "logging.h"
 #include "chat.h"
 #include "common.h"
 #include "llama.h"
+
+//// Shim for Rust/LLVM bcmp dependency which is missing on some Android versions/toolchains
+//extern "C" int bcmp(const void *s1, const void *s2, size_t n) {
+//    return memcmp(s1, s2, n);
+//}
 
 template<class T>
 static std::string join(const std::vector<T> &values, const std::string &delim) {
@@ -38,6 +44,17 @@ static llama_context                    * g_context;
 static llama_batch                        g_batch;
 static common_chat_templates_ptr          g_chat_templates;
 static common_sampler                   * g_sampler;
+static std::string                        g_constraint;
+
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_net_amazingapps_llama_android_core_internal_InferenceEngineImpl_nativeIsLlguidanceSupported(JNIEnv * /*env*/, jobject /*unused*/) {
+#ifdef LLAMA_USE_LLGUIDANCE
+    return JNI_TRUE;
+#else
+    return JNI_FALSE;
+#endif
+}
 
 extern "C"
 JNIEXPORT void JNICALL
@@ -107,7 +124,52 @@ static llama_context *init_context(llama_model *model, const int n_ctx = DEFAULT
 static common_sampler *new_sampler(float temp) {
     common_params_sampling sparams;
     sparams.temp = temp;
+
+    if (!g_constraint.empty()) {
+        if (g_constraint.find("%llguidance") == 0) {
+#ifdef LLAMA_USE_LLGUIDANCE
+            LOGi("%s: Using constraint type llguidance", __func__);
+            sparams.grammar.type = COMMON_GRAMMAR_TYPE_USER;
+            sparams.grammar.grammar = g_constraint;
+#else
+            LOGe("%s: llguidance requested but NOT enabled in build! Skipping constraint to avoid crash.", __func__);
+            // Do not set sparams.grammar.grammar to avoid GGML_ABORT in common_sampler_init
+#endif
+        } else {
+            LOGi("%s: Using constraint type GBNF", __func__);
+            sparams.grammar.type = COMMON_GRAMMAR_TYPE_USER;
+            sparams.grammar.grammar = g_constraint;
+        }
+        // Force greedy sampling for strict constraints in POC
+        sparams.temp = 0.0f;
+    } else {
+        LOGv("%s: Using no constraint", __func__);
+    }
+
     return common_sampler_init(g_model, sparams);
+}
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_net_amazingapps_llama_android_core_internal_InferenceEngineImpl_nativeSetConstraint(JNIEnv *env, jobject, jstring jjson) {
+    if (jjson == nullptr) {
+        LOGi("%s: Clearing constraint", __func__);
+        g_constraint.clear();
+    } else {
+        const char *json = env->GetStringUTFChars(jjson, 0);
+        g_constraint = json;
+        LOGi("%s: Set constraint to: %s", __func__, g_constraint.c_str());
+        env->ReleaseStringUTFChars(jjson, json);
+    }
+
+    // Re-initialize sampler if it already exists to apply the new constraint
+    if (g_sampler) {
+        LOGi("%s: Re-initializing sampler", __func__);
+        common_sampler_free(g_sampler);
+        g_sampler = new_sampler(DEFAULT_SAMPLER_TEMP);
+    }
+
+    return 0;
 }
 
 extern "C"
@@ -501,8 +563,14 @@ Java_net_amazingapps_llama_android_core_internal_InferenceEngineImpl_generateNex
         return nullptr;
     }
 
+    // Log the sampler chain once per generation to verify constraint is present
+    if (cached_token_chars.empty() && assistant_ss.tellp() == 0) {
+        LOGv("%s: Sampler chain: %s", __func__, common_sampler_print(g_sampler).c_str());
+    }
+
     // Sample next token
-    const auto new_token_id = common_sampler_sample(g_sampler, g_context, -1);
+    const auto new_token_id = common_sampler_sample(g_sampler, g_context, -1, /* grammar_first */ true);
+    LOGv("%s: Sampled token: %d ('%s')", __func__, new_token_id, common_token_to_piece(g_context, new_token_id).c_str());
     common_sampler_accept(g_sampler, new_token_id, true);
 
     // Populate the batch with new token, then decode

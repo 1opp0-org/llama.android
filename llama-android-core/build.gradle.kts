@@ -42,12 +42,19 @@ android {
         }
         externalNativeBuild {
             cmake {
+                val llGuidanceEnabled = project.findProperty("llama.android.llguidance")
+                    ?.toString()?.toBoolean() ?: false
+
                 arguments += "-DBUILD_SHARED_LIBS=ON"
                 arguments += "-DLLAMA_BUILD_COMMON=ON"
                 arguments += "-DLLAMA_OPENSSL=OFF"
                 arguments += "-DGGML_NATIVE=OFF"
 
                 arguments += "-DGGML_BACKEND_DL=ON"
+
+                if (llGuidanceEnabled) {
+                    arguments += "-DLLAMA_LLGUIDANCE=ON"
+                }
             }
         }
         aarMetadata {
@@ -80,9 +87,12 @@ android {
             }
         }
         debug {
+
             externalNativeBuild {
                 cmake {
-                    arguments += "-DCMAKE_BUILD_TYPE=Debug"
+                    // compile time for Release vs Debug is only a bit more,
+                    // but run time is MUCH faster
+                    arguments += "-DCMAKE_BUILD_TYPE=Release"
 
                     arguments += "-DCMAKE_MESSAGE_LOG_LEVEL=DEBUG"
                     arguments += "-DCMAKE_VERBOSE_MAKEFILE=ON"
@@ -106,9 +116,16 @@ android {
         }
     }
 
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+    }
+
     packaging {
         jniLibs {
-            useLegacyPackaging = true // this has impact on instrumented tests but not on modules that depend on this
+            // this has impact on instrumented tests but not on modules that depend on this
+            useLegacyPackaging = true
         }
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -125,16 +142,28 @@ android {
 
 dependencies {
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.timber)
+
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.kotlin.test.junit)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.core)
 
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.androidx.test.rules)
     androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.kotlin.test.junit)
     androidTestImplementation(libs.kotlinx.coroutines.test)
 }
 
 tasks.register("downloadTestModel") {
-    val modelUrl =
+    val modelSmollUrl =
         "https://huggingface.co/HuggingFaceTB/SmolLM2-360M-Instruct-GGUF/resolve/main/smollm2-360m-instruct-q8_0.gguf"
+
+    val modelQwen_0_5B_Url =
+        "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/main/qwen2.5-0.5b-instruct-q4_k_m.gguf?download=true"
+
+    val modelUrl = modelQwen_0_5B_Url
 
     val outputDir = file("src/androidTest/assets/")
     val outputFile = File(outputDir, "test_model.gguf")

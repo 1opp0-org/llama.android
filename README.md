@@ -72,3 +72,21 @@ dependencies {
 ```
 
 Latest version is [![Release](https://jitpack.io/v/1opp0-org/llama.android.svg)](https://jitpack.io/#1opp0-org/llama.android/)
+
+# Local build
+
+By default it builds Llama.cpp with the flag LLAMA_LLGUIDANCE on. This requires Rust. 
+
+## How to set up rust
+
+You can also read `jitpack_rustup.sh` in this repo and adapt something similar to your needs.
+
+Once Rust and Cargo are installed with all details set up, Gradle needs only 2 variables set:
+- RUSTUP_HOME
+- CARGO_HOME
+
+Verified with Rust 1.94.1.
+
+## How to disable LLGuidance
+
+`gradle.properties` has `llama.android.llguidance=true`. You can override that value with command line parameter `-Pllama.android.llguidance=false`
