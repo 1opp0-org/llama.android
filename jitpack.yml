@@ -33,6 +33,9 @@ before_install:
   - sdk install java 17.0.12-oracle
   - sdk use java 17.0.12-oracle
 
+  - source jitpack_rustup.sh
+  - install_rustup
+  - verify_compilation_android
 
 install:
   - echo "Building project with JDK 17 - c++ code on - rust code off"

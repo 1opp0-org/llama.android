@@ -42,20 +42,21 @@ if(DEFINED ANDROID_ABI)
     message(STATUS "Using Rust linker: ${ANDROID_NDK_CLANG_PATH}")
     
     # --- ExternalProject Hijacker ---
-    file(APPEND "${GLOBAL_HIJACK_LOG}" "[Step 20] Defining interceptor\n")
-    include(ExternalProject)
+    if (LLAMA_LLGUIDANCE)
+        file(APPEND "${GLOBAL_HIJACK_LOG}" "[Step 20] Defining interceptor (LLAMA_LLGUIDANCE is ON)\n")
+        include(ExternalProject)
 
-    function(ExternalProject_Add name)
-        file(APPEND "${GLOBAL_HIJACK_LOG}" "[Step 30] ExternalProject_Add(${name}) called\n")
-        if (name STREQUAL "llguidance_ext")
-            file(APPEND "${GLOBAL_HIJACK_LOG}" "[Step 40] Match found: hijacking ${name}\n")
-            
-            string(TOUPPER ${RUST_NDK_TRIPLE} RUST_TARGET_UPPER)
-            string(REPLACE "-" "_" RUST_TARGET_UPPER ${RUST_TARGET_UPPER})
+        function(ExternalProject_Add name)
+            file(APPEND "${GLOBAL_HIJACK_LOG}" "[Step 30] ExternalProject_Add(${name}) called\n")
+            if (name STREQUAL "llguidance_ext")
+                file(APPEND "${GLOBAL_HIJACK_LOG}" "[Step 40] Match found: hijacking ${name}\n")
+                
+                string(TOUPPER ${RUST_NDK_TRIPLE} RUST_TARGET_UPPER)
+                string(REPLACE "-" "_" RUST_TARGET_UPPER ${RUST_TARGET_UPPER})
 
-            # Create a verbatim wrapper script
-            set(HIJACK_SCRIPT "${CMAKE_BINARY_DIR}/cargo-hijack.sh")
-            file(WRITE "${HIJACK_SCRIPT}" 
+                # Create a verbatim wrapper script
+                set(HIJACK_SCRIPT "${CMAKE_BINARY_DIR}/cargo-hijack.sh")
+                file(WRITE "${HIJACK_SCRIPT}" 
 "#!/bin/sh
 echo \"[Step 50] Hijack script RUNNING for ${RUST_NDK_TRIPLE}\" >> \"${GLOBAL_HIJACK_LOG}\"
 export CARGO_TARGET_${RUST_TARGET_UPPER}_LINKER='${ANDROID_NDK_CLANG_PATH}'
@@ -75,37 +76,40 @@ else
 fi
 exit $RES
 ")
-            execute_process(COMMAND chmod +x "${HIJACK_SCRIPT}")
+                execute_process(COMMAND chmod +x "${HIJACK_SCRIPT}")
 
-            # Robustly filter out original commands to prevent leaks/conflicts
-            set(HIJACKED_ARGN "")
-            set(SKIP_NEXT FALSE)
-            foreach(ARG IN LISTS ARGN)
-                if (SKIP_NEXT)
-                    set(SKIP_NEXT FALSE)
-                    continue()
-                endif()
-                # Remove commands we are about to override
-                if (ARG STREQUAL "BUILD_COMMAND" OR ARG STREQUAL "CONFIGURE_COMMAND" OR ARG STREQUAL "INSTALL_COMMAND")
-                    set(SKIP_NEXT TRUE)
-                    continue()
-                endif()
-                list(APPEND HIJACKED_ARGN ${ARG})
-            endforeach()
+                # Robustly filter out original commands to prevent leaks/conflicts
+                set(HIJACKED_ARGN "")
+                set(SKIP_NEXT FALSE)
+                foreach(ARG IN LISTS ARGN)
+                    if (SKIP_NEXT)
+                        set(SKIP_NEXT FALSE)
+                        continue()
+                    endif()
+                    # Remove commands we are about to override
+                    if (ARG STREQUAL "BUILD_COMMAND" OR ARG STREQUAL "CONFIGURE_COMMAND" OR ARG STREQUAL "INSTALL_COMMAND")
+                        set(SKIP_NEXT TRUE)
+                        continue()
+                    endif()
+                    list(APPEND HIJACKED_ARGN ${ARG})
+                endforeach()
 
-            file(APPEND "${GLOBAL_HIJACK_LOG}" "[Step 41] Hijack script path: ${HIJACK_SCRIPT}\n")
+                file(APPEND "${GLOBAL_HIJACK_LOG}" "[Step 41] Hijack script path: ${HIJACK_SCRIPT}\n")
 
-            # Point ExternalProject to our wrapper and explicit command overrides
-            _ExternalProject_Add(${name}
-                ${HIJACKED_ARGN}
-                CONFIGURE_COMMAND sh -c "echo '[Step 45] Configure started' >> '${GLOBAL_HIJACK_LOG}'"
-                BUILD_COMMAND "${HIJACK_SCRIPT}"
-                INSTALL_COMMAND ""
-            )
-        else()
-            _ExternalProject_Add(${name} ${ARGN})
-        endif()
-    endfunction()
+                # Point ExternalProject to our wrapper and explicit command overrides
+                _ExternalProject_Add(${name}
+                    ${HIJACKED_ARGN}
+                    CONFIGURE_COMMAND sh -c "echo '[Step 45] Configure started' >> '${GLOBAL_HIJACK_LOG}'"
+                    BUILD_COMMAND "${HIJACK_SCRIPT}"
+                    INSTALL_COMMAND ""
+                )
+            else()
+                _ExternalProject_Add(${name} ${ARGN})
+            endif()
+        endfunction()
+    else()
+        file(APPEND "${GLOBAL_HIJACK_LOG}" "[Step 20] Skipping interceptor (LLAMA_LLGUIDANCE is OFF)\n")
+    endif()
 endif()
 
 file(APPEND "${GLOBAL_HIJACK_LOG}" "[Step 99] ABOUT TO INCLUDE SUBDIRECTORY\n")
