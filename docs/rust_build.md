@@ -9,11 +9,34 @@ This document details the flow of parameters across the four layers of our build
 | **Gradle** | `llama-android-core/build.gradle.kts` | `ANDROID_ABI`, `ANDROID_PLATFORM`, `LLAMA_LLGUIDANCE=[ON\|OFF]` | `libs.versions.toml` | **Orchestrator:** Passes Android environment and project flags to CMake via DSL. |
 | **CMake** | `llama-android-core/src/main/cpp/CMakeLists.txt` | `RUST_NDK_TRIPLE`, `ANDROID_NDK_CLANG_PATH`, `HIJACK_SCRIPT` | `ANDROID_ABI`, `CMAKE_C_COMPILER` | **Translator:** Detects ABI, locates NDK toolchain, and overrides `ExternalProject_Add` to intercept submodule calls. |
 | **Ninja** | `.cxx/.../build.ninja` | Shell command execution of `${HIJACK_SCRIPT}` | `BUILD_COMMAND` (Intercepted) | **Executor:** Generates specific build rules. Our interceptor ensures Ninja executes the wrapper script instead of raw `cargo`. |
-| **Rust/Cargo** | `cargo-hijack.sh` (Generated) | `CARGO_TARGET_<TRIPLE>_LINKER`, `AR`, `--target` | `RUST_NDK_TRIPLE`, `NDK_BIN_DIR` | **Compiler:** Uses NDK-specific environment variables to link Rust artifacts correctly for the Android target. |
+| **Rust/Cargo** | `cargo-hijack.sh` (Static) | `CARGO_TARGET_<TRIPLE>_LINKER`, `AR`, `--target` | `RUST_NDK_TRIPLE`, `NDK_BIN_DIR` | **Compiler:** Uses NDK-specific environment variables to link Rust artifacts correctly for the Android target. |
+
+## Environment Requirements (CI & Local)
+
+To build the Rust components, the following environment variables **must** be set and preserved throughout the build process:
+
+*   **`RUSTUP_HOME`**: Path to the `rustup` data directory.
+*   **`CARGO_HOME`**: Path to the `cargo` data directory (where binaries like `cargo` reside).
+*   **`PATH`**: Must include `${CARGO_HOME}/bin` to make the `cargo` and `rustup` binaries available.
+
+### JitPack Setup
+On environments like JitPack (which run on Ubuntu 18.04 and lack a pre-installed Rust toolchain), we use the `jitpack_rustup.sh` script. This script:
+1.  Sets up isolated `RUSTUP_HOME` and `CARGO_HOME` directories.
+2.  Installs a specific version of the Rust toolchain (e.g., `1.94.1`).
+3.  Adds the required Android targets (`x86_64-linux-android`, `aarch64-linux-android`).
+
+#### Local environment
+
+You can run `jitpack_rustup.sh` to configure rust on your local environment:
+
+```shell
+source jitpack_rustup.sh
+install_rustup
+```
 
 ## Concrete Path Example (ABI: `arm64-v8a`)
 
-When building for ARM64, the process follows these exact filesystem paths (relative to project root):
+When building for ARM64, the process follows these filesystem paths (relative to project root):
 
 1.  **CMake Binary Directory:**
     `llama-android-core/.cxx/Release/3x6t3th6/arm64-v8a/`
@@ -23,6 +46,8 @@ When building for ARM64, the process follows these exact filesystem paths (relat
     `llama-android-core/.cxx/Release/3x6t3th6/arm64-v8a/llguidance/source/target/aarch64-linux-android/release/libllguidance.a`
 4.  **Final Relocation (Target) Path:**
     `llama-android-core/.cxx/Release/3x6t3th6/arm64-v8a/llguidance/source/target/release/libllguidance.a`
+
+Note: `3x6t3th6` is an example of a random string generated every time we run cmake from scratch.
 
 **Why this works:** The `llama.cpp` C++ linker is hardcoded to look in `target/release/`. By manually moving the file from the triple-specific folder (`aarch64-linux-android`) to the generic `release` folder, we satisfy the submodule's expectations without changing its code.
 
@@ -55,7 +80,10 @@ A common point of confusion is how different ABIs (e.g., `x86_64` and `arm64-v8a
 *   **Result:** Because the root source folder is unique for every ABI, the `target/release` folder is also unique. There is **zero overlap** on disk between the artifacts of different architectures.
 
 ## Key Files & Locations
+*   **Rust tools install and env set up:** `jitpack_rustup.sh`
+*   **Gradle enable/disable LLGuidance:** `gradle.properties`
+*   **Gradle to CMake setup:** `llama-android-core/build.gradle.kts`
 *   **Interceptor Definition:** `llama-android-core/src/main/cpp/CMakeLists.txt`
 *   **Static Wrapper Script:** `llama-android-core/src/main/cpp/cargo-hijack.sh`
-*   **Submodule Logic:** `llama.cpp/common/CMakeLists.txt` (READ-ONLY)
+*   **Submodule Logic:** `llama.cpp/common/CMakeLists.txt`
 *   **Rust Source:** `llama.cpp/llguidance/source/`
