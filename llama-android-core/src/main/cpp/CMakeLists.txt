@@ -24,7 +24,7 @@ set(HIJACK_SCRIPT_PATH "${HIJACK_SCRIPT_PATH}" CACHE INTERNAL "Path to the Rust 
 set(LLAMA_SRC "${LLAMA_SRC}" CACHE INTERNAL "Path to the llama.cpp submodule")
 
 if(DEFINED ANDROID_ABI)
-    message(STATUS "Configuring for Android ABI: ${ANDROID_ABI}")
+    message(STATUS "Detected Android ABI: ${ANDROID_ABI}")
     if(ANDROID_ABI STREQUAL "arm64-v8a")
         set(GGML_SYSTEM_ARCH "ARM")
         set(GGML_CPU_KLEIDIAI ON)
@@ -79,8 +79,6 @@ if(DEFINED ANDROID_ABI)
                     CONFIGURE_COMMAND ${CMAKE_COMMAND} -E echo "Rust configuration phase starting..."
                     BUILD_COMMAND ${CMAKE_COMMAND} -E env 
                         "PATH=$ENV{PATH}"
-                        "RUSTUP_HOME=$ENV{RUSTUP_HOME}"
-                        "CARGO_HOME=$ENV{CARGO_HOME}"
                         RUST_NDK_TRIPLE=${RUST_NDK_TRIPLE}
                         ANDROID_NDK_CLANG_PATH=${ANDROID_NDK_CLANG_PATH}
                         NDK_BIN_DIR=${NDK_BIN_DIR}
