@@ -19,9 +19,9 @@ When building for ARM64, the process follows these exact filesystem paths (relat
     `llama-android-core/.cxx/Release/3x6t3th6/arm64-v8a/`
 2.  **Rust Source Directory (cloned by ExternalProject):**
     `llama-android-core/.cxx/Release/3x6t3th6/arm64-v8a/llguidance/source/`
-3.  **Step 1: Cargo Generation Path:**
+3.  **Rust Build Output Path:**
     `llama-android-core/.cxx/Release/3x6t3th6/arm64-v8a/llguidance/source/target/aarch64-linux-android/release/libllguidance.a`
-4.  **Step 2: Relocation (Target) Path:**
+4.  **Final Relocation (Target) Path:**
     `llama-android-core/.cxx/Release/3x6t3th6/arm64-v8a/llguidance/source/target/release/libllguidance.a`
 
 **Why this works:** The `llama.cpp` C++ linker is hardcoded to look in `target/release/`. By manually moving the file from the triple-specific folder (`aarch64-linux-android`) to the generic `release` folder, we satisfy the submodule's expectations without changing its code.
@@ -56,6 +56,6 @@ A common point of confusion is how different ABIs (e.g., `x86_64` and `arm64-v8a
 
 ## Key Files & Locations
 *   **Interceptor Definition:** `llama-android-core/src/main/cpp/CMakeLists.txt`
-*   **Generated Wrapper:** `${CMAKE_BINARY_DIR}/cargo-hijack.sh`
+*   **Static Wrapper Script:** `llama-android-core/src/main/cpp/cargo-hijack.sh`
 *   **Submodule Logic:** `llama.cpp/common/CMakeLists.txt` (READ-ONLY)
 *   **Rust Source:** `llama.cpp/llguidance/source/`
