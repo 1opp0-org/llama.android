@@ -38,8 +38,8 @@ before_install:
   - verify_compilation_android
 
 install:
-  - echo "Building project with JDK 17 - c++ code on - rust code off"
-  - ./gradlew :llama-android-core:buildCMakeRelease --no-daemon -Pllama.android.llguidance=false
+  - echo "Building project with JDK 17 - c++ code on - rust code on"
+  - ./gradlew :llama-android-core:buildCMakeRelease --no-daemon
   - echo "Building project with JDK 17 - kotlin code"
   - ./gradlew :llama-android-core:publishToMavenLocal
 
