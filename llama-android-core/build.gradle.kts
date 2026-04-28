@@ -54,6 +54,12 @@ android {
 
                 if (llGuidanceEnabled) {
                     arguments += "-DLLAMA_LLGUIDANCE=ON"
+
+                    val rustupHome = System.getenv("RUSTUP_HOME")
+                    val cargoHome = System.getenv("CARGO_HOME")
+                    if ( rustupHome == null || cargoHome == null ) {
+                        throw RuntimeException("RUSTUP_HOME and/or CARGO_HOME environment variable are not set. These are required to build LLGuidance support with Rust. You can also disable LLGuidance by editing gradle.properties and setting llama.android.llguidance=false.")
+                    }
                 }
             }
         }
@@ -157,16 +163,10 @@ dependencies {
 }
 
 tasks.register("downloadTestModel") {
-//    val modelSmollUrl =
-//        "https://huggingface.co/HuggingFaceTB/SmolLM2-360M-Instruct-GGUF/resolve/main/smollm2-360m-instruct-q8_0.gguf"
 
-    val modelQwen_0_5B_q8_0_Url =
-        "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/main/qwen2.5-0.5b-instruct-q8_0.gguf"
+    val modelQwen_0_5B_Url = "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/main/qwen2.5-0.5b-instruct-q4_k_m.gguf"
 
-//    val modelQwen_0_5B_Url =
-//        "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/main/qwen2.5-0.5b-instruct-q4_k_m.gguf?download=true"
-
-    val modelUrl = modelQwen_0_5B_q8_0_Url
+    val modelUrl = modelQwen_0_5B_Url
 
     val outputDir = file("src/androidTest/assets/")
     val outputFile = File(outputDir, "test_model.gguf")

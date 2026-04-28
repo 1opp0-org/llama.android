@@ -24,6 +24,7 @@ set(HIJACK_SCRIPT_PATH "${HIJACK_SCRIPT_PATH}" CACHE INTERNAL "Path to the Rust 
 set(LLAMA_SRC "${LLAMA_SRC}" CACHE INTERNAL "Path to the llama.cpp submodule")
 
 if(DEFINED ANDROID_ABI)
+    # Note: the rust triples are lowercase and hyphens for the NDK path, but uppercase and underscore for rust itself
     message(STATUS "Detected Android ABI: ${ANDROID_ABI}")
     if(ANDROID_ABI STREQUAL "arm64-v8a")
         set(GGML_SYSTEM_ARCH "ARM")
@@ -77,11 +78,9 @@ if(DEFINED ANDROID_ABI)
                 _ExternalProject_Add(${name}
                     ${HIJACKED_ARGN}
                     CONFIGURE_COMMAND ${CMAKE_COMMAND} -E echo "Rust configuration phase starting..."
-                    BUILD_COMMAND ${CMAKE_COMMAND} -E env 
-                        "PATH=$ENV{PATH}"
+                    BUILD_COMMAND ${CMAKE_COMMAND} -E env
                         RUST_NDK_TRIPLE=${RUST_NDK_TRIPLE}
                         ANDROID_NDK_CLANG_PATH=${ANDROID_NDK_CLANG_PATH}
-                        NDK_BIN_DIR=${NDK_BIN_DIR}
                         sh "${HIJACK_SCRIPT_PATH}"
                     INSTALL_COMMAND ""
                 )
