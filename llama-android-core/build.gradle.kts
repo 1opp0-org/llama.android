@@ -1,4 +1,5 @@
 import java.net.URI
+import java.security.MessageDigest
 
 plugins {
     alias(libs.plugins.android.library)
@@ -183,8 +184,15 @@ tasks.register("downloadTestModel") {
                 }
             }
             println("Download complete: ${outputFile.absolutePath}")
-        } else {
-            println("Test model already exists, skipping download: ${outputFile.path} - ${outputFile.length() / 1024 / 1024} MB")
+        }
+
+        if ( outputFile.exists() ) {
+            val expectedSha256 = "74a4da8c9fdbcd15bd1f6d01d621410d31c6fc00986f5eb687824e7b93d7a9db"
+            if ( expectedSha256 == computeSha256(outputFile) ) {
+                println("Test model already exists, skipping download: ${outputFile.path} - ${outputFile.length() / 1024 / 1024} MB")
+            } else {
+                throw RuntimeException("Test model already exists but has incorrect SHA-256 hash. Expected '$expectedSha256' but got '${computeSha256(outputFile)}'. Please delete the file and try again: ${outputFile.absolutePath}")
+            }
         }
     }
 }
@@ -205,4 +213,17 @@ tasks.named<Delete>("clean") {
     delete(file("src/androidTest/assets/test_model.gguf"))
 
     delete(".cxx")
+}
+
+private fun computeSha256(file: File): String {
+    val digest = MessageDigest.getInstance("SHA-256")
+    file.inputStream().use { input ->
+        val buffer = ByteArray(8192)
+        var bytesRead = input.read(buffer)
+        while (bytesRead != -1) {
+            digest.update(buffer, 0, bytesRead)
+            bytesRead = input.read(buffer)
+        }
+    }
+    return digest.digest().joinToString("") { b: Byte -> "%02x".format(b) }
 }
