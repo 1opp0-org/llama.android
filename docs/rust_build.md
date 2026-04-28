@@ -27,7 +27,7 @@ On environments like JitPack (which run on Ubuntu 18.04 and lack a pre-installed
 
 #### Local environment
 
-You can run `jitpack_rustup.sh` to configure rust on your local environment:
+You can run `jitpack_rustup.sh` to install rust on your local environment:
 
 ```shell
 source jitpack_rustup.sh
@@ -47,7 +47,7 @@ When building for ARM64, the process follows these filesystem paths (relative to
 4.  **Final Relocation (Target) Path:**
     `llama-android-core/.cxx/Release/3x6t3th6/arm64-v8a/llguidance/source/target/release/libllguidance.a`
 
-Note: `3x6t3th6` is an example of a random string generated every time we run cmake from scratch.
+Note: `3x6t3th6` is the hash of the input parameters involved in the cmake build.
 
 **Why this works:** The `llama.cpp` C++ linker is hardcoded to look in `target/release/`. By manually moving the file from the triple-specific folder (`aarch64-linux-android`) to the generic `release` folder, we satisfy the submodule's expectations without changing its code.
 
