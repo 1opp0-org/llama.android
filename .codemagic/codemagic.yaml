@@ -1,0 +1,18 @@
+# Codemagic CI/CD configuration for Llama Android
+# https://codemagic.io
+
+workflows:
+  android-release:
+    name: Android Release
+    max_build_duration: 5
+    instance_type: linux_x2
+    scripts:
+      - name: Set up Android SDK location
+        script: |
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/local.properties"
+      - name: Build CMake Release
+        script: |
+          cd /home/builder/clone
+          ./gradlew :llama-android-core:buildCMakeRelease -Pllama.android.llguidance=false
+    artifacts:
+      - llama-android-core/build/outputs/aar/*.aar
